@@ -1,0 +1,80 @@
+<div id="left-menu">
+    <div class="active-rooms" ng-controller="allRoomsCtrl">Active video chat conferences
+        <ul>
+            <li ng-repeat="room in rooms"><a href="{{room}}">{{room}}</a></li>
+        </ul>
+    </div>
+    <div class="text-chat" ng-controller="TextChatCtrl">
+        <h3>Messages</h3>
+        <div class="overflowable">
+            <p ng-repeat="message in messages" ng-class="{alert: message.user =='chatname'}">{{message.user}}: {{message.text}}</p>
+        </div class="col">
+        <h3>Users</h3>
+        <div class="overflowable">
+            <p ng-repeat="user in users">{{user}}</p>
+        </div>
+        <div class="clr">
+            <h3>Send your message</h3>
+            <form ng-submit="sendMessage()">
+                <input ng-model="message" />
+                <input type="submit" value="Send" />
+            </form>
+        </div>
+        <div class="clr">
+            <h3>Change your name</h3>
+            <p>Your current user name is {{user}}</p>
+            <form ng-submit="changeName()">
+                <input ng-model="newName" />
+                <input type="submit" value="Change name" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="ot-main-chat-window" ng-controller="RoomCtrl" class="sharing-my-screen-{{sharingMyScreen}}">
+
+    <tb-session apiKey="<%=apiKey%>" 
+        sessionId="<%=sessionId%>" 
+        token="<%=token%>" 
+        publisher="publisher" 
+        streams="streams" 
+        session="session">
+        
+        <tb-layout props="{animate:true,bigFixedRatio:true}">
+            <tb-subscriber ng-repeat="stream in streams | filter:notMine" 
+                stream="stream" 
+                session="session" 
+                props="{style: {nameDisplayMode: 'off'}}" 
+                ng-class="{OT_big: (stream.oth_large == undefined && stream.name == 'screen') || stream.oth_large}" 
+                ng-dblclick="$emit('changeSize')">
+                    <input type="button" class="resize-btn" ng-click="$emit('changeSize');"/>
+            </tb-subscriber>
+            <tb-publisher ng-if="sharingMyScreen"
+                publisher="screenPublisher"
+                session="session"
+                props='screenPublisherProps'
+                ng-class="{OT_big: screenBig}" 
+                ng-dblclick="$emit('changeScreenSize');">
+                <input type="button" class="resize-btn" ng-click="$emit('changeScreenSize');"/>
+            </tb-publisher>
+        </tb-layout>
+        
+        <tb-publisher id="facePublisher" 
+            apiKey="<%=apiKey%>" 
+            publisher="publisher"
+            draggable="true"
+            props="{name:'face', style: {nameDisplayMode: 'off'}, resolution: '1280x720'}">
+        </tb-publisher>
+        
+    </tb-session>
+
+    <div id="shareInfo" 
+        class="streams-{{(streams | filter:notMine).length > 0}}" 
+        ng-cloak>
+        <p>Waiting for someone to join: <a href="{{shareURL}}">{{shareURL}}</a></p>
+    </div>
+    <div id="bottomBar">
+        <input type="button" name="screenshare" value="Share Screen" id="showscreen" ng-click="shareScreen()" class="screen-btn" />
+        <input type="button" name="screenshare" value="Hide Screen" id="hidescreen" ng-click="hideScreen()" class="screen-btn" />
+    </div>
+</div>
